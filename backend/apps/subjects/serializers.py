@@ -1,32 +1,62 @@
 from rest_framework import serializers
-
-from backend.apps.academic import models
 from .models import Subject
 
 class SubjectSerializer(serializers.ModelSerializer):
-    # Détails lisibles pour Angular
-    encadrant_nom = serializers.ReadOnlyField(source='encadrant.user.nom')
-    superviseur_nom = serializers.ReadOnlyField(source='superviseur.user.nom')
-    semester_libelle = serializers.ReadOnlyField(source='semester.libelle')
+    # On utilise des SerializerMethodField pour éviter que Django ne crashe 
+    # si les relations transversales sont vides ou mal nommées au moment du POST
+    enseignant_nom = serializers.SerializerMethodField()
+    superviseur_nom = serializers.SerializerMethodField()
+    semester_libelle = serializers.SerializerMethodField()
+    annee_academique_libelle = serializers.SerializerMethodField()
+    total_candidatures = serializers.SerializerMethodField()
 
     class Meta:
         model = Subject
         fields = '__all__'
 
+    def get_enseignant_nom(self, obj):
+        try:
+            return f"{obj.enseignant.user.nom} {obj.enseignant.user.prenom}"
+        except AttributeError:
+            return None
+
+    def get_superviseur_nom(self, obj):
+        try:
+            return f"{obj.superviseur.user.nom} {obj.superviseur.user.prenom}"
+        except AttributeError:
+            return None
+
+    def get_semester_libelle(self, obj):
+        try:
+            # Vérifiez si votre modèle Semester utilise 'libelle', 'nom' ou 'code'
+            return getattr(obj.semester, 'libelle', str(obj.semester))
+        except AttributeError:
+            return None
+
+    def get_annee_academique_libelle(self, obj):
+        try:
+            return getattr(obj.semester.academic_year, 'libelle', str(obj.semester.academic_year))
+        except AttributeError:
+            return None
+
+    def get_total_candidatures(self, obj):
+        try:
+            return obj.applications.count()
+        except AttributeError:
+            return 0
+
     def validate(self, data):
         """
         Validation globale du sujet.
         """
-        encadrant = data.get('encadrant')
+        enseignant = data.get('enseignant')
         superviseur = data.get('superviseur')
 
-        # L'encadrant et le superviseur doivent être différents
-        if encadrant == superviseur:
+        if enseignant == superviseur:
             raise serializers.ValidationError({
                 "superviseur": "L'encadrant ne peut pas être son propre superviseur."
             })
 
-        # Le superviseur doit avoir le grade requis
         grades_superieurs = ['Maitre_Conferences', 'Professeur']
         if superviseur and superviseur.grade not in grades_superieurs:
             raise serializers.ValidationError({

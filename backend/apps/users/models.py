@@ -27,6 +27,9 @@ class Role(models.Model):
         return self.name
 
 
+
+
+
 # Manager personnalisé pour gérer la création d'utilisateurs et de superutilisateurs
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):

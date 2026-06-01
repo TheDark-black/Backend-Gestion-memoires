@@ -5,7 +5,11 @@ from .models import User, Teacher, Student, Role
 # Serializer utilisé pour afficher les informations publiques
 # des utilisateurs sans exposer les données sensibles
 class UserSerializer(serializers.ModelSerializer):
-
+    roles = serializers.SlugRelatedField(
+        many=True,
+        slug_field='name',
+        queryset=Role.objects.all())
+    
     class Meta:
         model = User
 
@@ -24,10 +28,7 @@ class UserSerializer(serializers.ModelSerializer):
             'created_at'
         ]
 
-        roles = serializers.SlugRelatedField(
-        many=True,
-        slug_field='name',
-        queryset=Role.objects.all())
+        
         
     # Création d'utilisateur via le manager personnalisé
     # por synchroniser automatiquement les rôles 
@@ -57,3 +58,4 @@ class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
         fields = '__all__'
+        

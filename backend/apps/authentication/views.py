@@ -12,8 +12,10 @@ from .serializers import (
 
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import  RetrieveAPIView
 from rest_framework.views import APIView
+from apps.users.views import UserListView
+from apps.users.views import EncadrantListView
 from drf_spectacular.utils import extend_schema
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from apps.users.models import User
@@ -169,3 +171,5 @@ class ResetPasswordView(APIView):
                 return Response({'error':'Utilisateur introuvable'}, status=status.HTTP_404_NOT_FOUND)
             
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+  

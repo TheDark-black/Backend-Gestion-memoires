@@ -6,6 +6,8 @@ from .views import (
     LogoutView,
     RequestPasswordResetView,
     ResetPasswordView,
+    UserListView,
+    EncadrantListView,
 )
 
 
@@ -15,6 +17,12 @@ urlpatterns = [
 
     # Endpoint d'inscription des utilisateurs
     path('register/', RegisterView.as_view(), name='register'),
+
+    # Endpoint pour recuperer tout les utilisateurs
+    path('users-list/', UserListView.as_view(), name='user-list'),
+
+    # Endpoint pour recuperer tout les superviseurs
+    path('supervisors/', EncadrantListView.as_view(), name='supervisors'),
 
     # Endpoint permettant à l'utilisateur connecté
     # de consulter ou modifier son profil

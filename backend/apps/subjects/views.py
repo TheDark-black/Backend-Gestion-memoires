@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Subject
+from django.db.models import Q
 from .serializers import SubjectSerializer
 
 class SubjectAPIView(APIView):
@@ -38,13 +39,17 @@ class SubjectAPIView(APIView):
 
 
 
-    # --- FONCTION DELETE (Suppression) ---
+   # --- ARCHIVAGE (SUPPRESSION LOGIQUE) ---
     def delete(self, request, pk):
         subject = get_object_or_404(Subject, pk=pk)
-        subject.delete()
+        
+        # Au lieu de subject.delete() (suppression physique), on archive
+        subject.statut = 'archive'
+        subject.save()
+        
         return Response({
-            "message": "Sujet supprimé définitivement"
-        }, status=status.HTTP_204_NO_CONTENT)
+            "message": "Le sujet a été archivé avec succès (suppression logique)"
+        }, status=status.HTTP_200_OK)
     
 
     
@@ -57,16 +62,36 @@ class SubjectAPIView(APIView):
 
         # LISTE FILTRÉE PAR SEMESTRE ENCADRANT ET STATUT(Si pas d'ID fourni) ---
         semester_id = request.query_params.get('semester_id')
-        encadrant_id = request.query_params.get('encadrant_id')
+        enseignant_id = request.query_params.get('enseignant_id')
         statut = request.query_params.get('statut')
+        search_query = request.query_params.get('search')
         
         # affichage de toute les sujet enregistrer 
         subjects = Subject.objects.all()
+
+
+        # [CONTRAINTE VISIBILITÉ] : Si l'utilisateur connecté est un étudiant, il ne voit QUE les sujets publiés
+        # (À adapter selon votre système de rôles utilisateur)
+        is_student = request.user.groups.filter(name='Students').exists() if request.user.is_authenticated else True 
+        if is_student:
+            subjects = subjects.filter(statut='publie')
+        elif statut:
+            # Si c'est un prof/admin, il peut filtrer par le statut de son choix (brouillon, complet, etc.)
+            subjects = subjects.filter(statut=statut)
+
+        # Recherche par mot-clé globale (titre, résumé, mots-clés)
+        if search_query:
+            subjects = subjects.filter(
+                Q(titre__icontains=search_query) | 
+                Q(resume__icontains=search_query) | 
+                Q(mots_cles__icontains=search_query)
+            )
+
         
         if semester_id:
             subjects = subjects.filter(semester_id=semester_id)
-        if encadrant_id:
-            subjects = subjects.filter(encadrant_id=encadrant_id)
+        if enseignant_id:
+            subjects = subjects.filter(encadrant_id=enseignant_id)
         if statut:
             subjects = subjects.filter(statut=statut)
             
