@@ -19,9 +19,9 @@ class Subject(models.Model):
     mots_cles = models.CharField(max_length=255, null=True, blank=True)
     
     # Relations (Assurez-vous que les modèles Teacher et Semester existent)
-    encadrant = models.ForeignKey('Teacher', on_delete=models.CASCADE, related_name='sujets_encadres')
-    superviseur = models.ForeignKey('Teacher', on_delete=models.CASCADE, related_name='sujets_supervises')
-    semester = models.ForeignKey('Semester', on_delete=models.CASCADE, related_name='subjects')
+    encadrant = models.ForeignKey('teachers.Teacher', on_delete=models.CASCADE, related_name='sujets_encadres')
+    superviseur = models.ForeignKey('teachers.Teacher', on_delete=models.CASCADE, related_name='sujets_supervises')
+    semester = models.ForeignKey('semesters.Semester', on_delete=models.CASCADE, related_name='subjects')
     
     capacite = models.IntegerField(default=1)
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='brouillon')

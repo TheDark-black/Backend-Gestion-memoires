@@ -11,10 +11,18 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+import sys
 from datetime import timedelta
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Récupère le chemin du dossier 'apps' et l'ajoute aux chemins de recherche Python
+APPS_DIR = os.path.join(BASE_DIR, 'apps')
+sys.path.insert(0, APPS_DIR)
+
 
 # JWT Settings
 SIMPLE_JWT = {
@@ -46,8 +54,27 @@ INSTALLED_APPS = [
     'teachers',
     'semesters',
     'subjects', 
+    'academic',
     'rest_framework', # Indispensable pour les API
+    'rest_framework_simplejwt.token_blacklist',
+    'drf_spectacular',
+    'apps.users',
+
+    
 ]
+
+REST_FRAMEWORK = {
+
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+
+    ),
+}
+
+AUTH_USER_MODEL = 'users.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -85,9 +112,9 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'gestion_memoire',
+        'NAME': 'gestion-memoire',
         'USER':'postgres',
-        'PASSWORD':'kabore',
+        'PASSWORD':'2000',
         'HOST':'localhost',
         'PORT':'5432',
     }
