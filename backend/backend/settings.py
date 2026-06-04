@@ -114,7 +114,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'gestion-memoire',
         'USER':'postgres',
-        'PASSWORD':'2000',
+        'PASSWORD':'kabore',
         'HOST':'localhost',
         'PORT':'5432',
     }
